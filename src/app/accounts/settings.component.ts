@@ -37,6 +37,8 @@ export class SettingsComponent implements OnInit {
     localeOptions: any[];
     theme: string;
     themeOptions: any[];
+    enableCloseToTray: boolean = false;
+    startMinimized: boolean = false;
 
     constructor(private analytics: Angulartics2, private toasterService: ToasterService,
         i18nService: I18nService, private platformUtilsService: PlatformUtilsService,
@@ -74,11 +76,13 @@ export class SettingsComponent implements OnInit {
     }
 
     async ngOnInit() {
-        this.showMinToTray = this.platformUtilsService.getDevice() === DeviceType.WindowsDesktop;
+        this.showMinToTray = true;
         this.lockOption = await this.storageService.get<number>(ConstantsService.lockOptionKey);
         this.disableFavicons = await this.storageService.get<boolean>(ConstantsService.disableFaviconKey);
         this.enableMinToTray = await this.storageService.get<boolean>(ElectronConstants.enableMinimizeToTrayKey);
+        this.enableCloseToTray = await this.storageService.get<boolean>(ElectronConstants.enableCloseToTrayKey);
         this.enableTray = await this.storageService.get<boolean>(ElectronConstants.enableTrayKey);
+        this.startMinimized = await this.storageService.get<boolean>(ElectronConstants.enableStartMinimizedKey);
         this.locale = await this.storageService.get<string>(ConstantsService.localeKey);
         this.theme = await this.storageService.get<string>(ConstantsService.themeKey);
 
@@ -117,6 +121,16 @@ export class SettingsComponent implements OnInit {
         await this.storageService.save(ElectronConstants.enableTrayKey, this.enableTray);
         this.callAnalytics('Tray', this.enableTray);
         this.messagingService.send(this.enableTray ? 'showTray' : 'removeTray');
+    }
+
+    async saveCloseToTray() {
+        await this.storageService.save(ElectronConstants.enableCloseToTrayKey, this.enableCloseToTray);
+        this.callAnalytics('CloseToTray', this.enableCloseToTray);
+    }
+
+    async saveStartMinimized() {
+        await this.storageService.save(ElectronConstants.enableStartMinimizedKey, this.startMinimized);
+        this.callAnalytics('StartMinimized', this.startMinimized);
     }
 
     async saveLocale() {
